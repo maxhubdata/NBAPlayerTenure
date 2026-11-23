@@ -3,7 +3,7 @@ library(tidyverse)
 raw_draft <- readRDS("data/draft_raw.rds")
 raw_players <- readRDS("data/players_raw.rds")
 
-glimpse(raw_draft)
+##Data Cleaning
 clean_draft <- raw_draft |> 
   transmute(
     draft_team = TEAM_ABBREVIATION,
@@ -26,4 +26,12 @@ clean_players <- raw_players |>
   distinct() |> 
   arrange(player_id,season_start)
 
-
+##Validating no errors
+#Checking for duplicates
+clean_draft |> count(player_id) |> filter(n>1)
+#Checking for correct # of years
+clean_draft |> count(draft_year)
+#Which players were drafted but never played in the NBA
+anti_join(clean_draft, clean_players, by = "player_id")
+#How many players played for more than one team in a season
+clean_players |> count(player_id, season_start) |> filter(n > 1)
