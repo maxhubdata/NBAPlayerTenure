@@ -14,6 +14,7 @@ clean_draft <- raw_draft |>
     overall_pick = as.integer(OVERALL_PICK)
   )
 
+#dropping TOT to have only one row per team played for 
 clean_players <- raw_players |> 
   filter(TEAM_ABBREVIATION != "TOT") |> 
   transmute(
@@ -32,6 +33,12 @@ clean_draft |> count(player_id) |> filter(n>1)
 #Checking for correct # of years
 clean_draft |> count(draft_year)
 #Which players were drafted but never played in the NBA
-anti_join(clean_draft, clean_players, by = "player_id")
+never_played <- anti_join(clean_draft, clean_players, by = "player_id")
 #How many players played for more than one team in a season
 clean_players |> count(player_id, season_start) |> filter(n > 1)
+
+#removing all players who never played from the draft data
+clean_draft_played <- anti_join(clean_draft,never_played,by = "player_id")
+
+saveRDS(clean_draft_played,"data/clean_draft.rds")
+saveRDS(clean_players,"data/clean_players.rds")
