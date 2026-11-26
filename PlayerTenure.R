@@ -13,5 +13,13 @@ tenure <- players |>
              else n_distinct(season_start[seq_len(left_team-1)]),
     event = as.integer(!is.na(left_team)),
     .groups = "drop"
-  )
+  ) |> 
+  mutate(time = tenure+event)
   
+count(tenure, time)
+
+summary(tenure$tenure)
+count(tenure, tenure == 0)
+
+
+ggplot(tenure, aes(tenure))+geom_histogram()
