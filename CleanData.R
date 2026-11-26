@@ -7,12 +7,14 @@ raw_players <- readRDS("data/players_raw.rds")
 clean_draft <- raw_draft |> 
   transmute(
     draft_team = TEAM_ABBREVIATION,
+    draft_team_id = TEAM_ID,
     draft_year = as.integer(SEASON),
     player_name = PLAYER_NAME,
     player_id = PERSON_ID,
     round = as.integer(ROUND_NUMBER),
     overall_pick = as.integer(OVERALL_PICK)
-  )
+  ) |> 
+  arrange(player_id, draft_team_id)
 
 #dropping TOT to have only one row per team played for 
 clean_players <- raw_players |> 
@@ -41,17 +43,22 @@ clean_players |> count(player_id, season_start) |> filter(n > 1)
 clean_draft_played <- anti_join(clean_draft,never_played,by = "player_id")
 
 first_team <- clean_players |> 
-  arrange(player_id,team_id) |> 
+  arrange(player_id,season_start) |> 
   group_by(player_id) |> 
   slice(1) |> 
   ungroup(player_id) |> 
   select(player_id, first_team = team, first_team_id = team_id)
 
+#checking 
 check <- clean_draft_played |>
   inner_join(first_team, by = "player_id") |>
-  mutate(same_team = draft_team == first_team)
-
+  mutate(same_team = draft_team_id == first_team_id)
 count(check, same_team)
+
+check |>
+  filter(!same_team) |>
+  select(player_name, draft_year, overall_pick, draft_team, first_team_id,first_team) |>
+  View()
 
 saveRDS(clean_draft_played,"data/clean_draft.rds")
 saveRDS(clean_players,"data/clean_players.rds")
