@@ -49,7 +49,7 @@ first_team <- clean_players |>
   ungroup(player_id) |> 
   select(player_id, first_team = team, first_team_id = team_id)
 
-#checking 
+#checking for if the API lists the rights holding team or draft team
 check <- clean_draft_played |>
   inner_join(first_team, by = "player_id") |>
   mutate(same_team = draft_team_id == first_team_id)
@@ -60,5 +60,9 @@ check |>
   select(player_name, draft_year, overall_pick, draft_team, first_team_id,first_team) |>
   View()
 
-saveRDS(clean_draft_played,"data/clean_draft.rds")
+#150 players were draft night trades, we will be analyzing tenure on team they first played for - NOT team they were drafted by.
+clean_draft_final <- clean_draft_played |> 
+  inner_join(first_team,by="player_id")
+
+saveRDS(clean_draft_final,"data/clean_draft.rds")
 saveRDS(clean_players,"data/clean_players.rds")
