@@ -23,13 +23,11 @@ count(tenure, time)
 summary(tenure$tenure)
 count(tenure, tenure == 0)
 
-
 ggplot(tenure, aes(tenure, col="red"))+geom_histogram(binwidth = 1)
 
 round1 <- tenure |> 
   filter(round==1)
 summary(round1$tenure)
-
 
 round2 <- tenure |> 
   filter(round==2)
@@ -37,9 +35,14 @@ summary(round2$tenure)
 
 tenure |> filter(round==1) |> select(tenure) |> summary()
 
-fit <- survfit2(Surv(tenure,event) ~ round, data=tenure) |> ggsurvfit() 
+fit <- survfit2(Surv(tenure,event) ~ round, data=tenure) |> 
+  ggsurvfit() +
+  labs(x = "Years of Tenure", y = "Overall Survival Probability") +    
+  add_confidence_interval()t
 diff <- survdiff(Surv(tenure,event)~round, data=tenure)
 
+cox_fit <- coxph(Surv(time, event) ~ I(overall_pick / 10) + draft_year, data = tenure)
 
-
-
+zph <- cox.zph(cox_fit)
+zph
+plot(zph)
